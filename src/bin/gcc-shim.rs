@@ -3,6 +3,7 @@
 use std::env;
 use std::fs::File;
 use std::io::{self, prelude::*};
+use std::os::unix::prelude::FileExt;
 use std::path::PathBuf;
 
 fn main() {
@@ -27,7 +28,7 @@ fn main() {
     }).unwrap_or_else(|| panic!("Cannot find the first nonexistent candidate file to which the program's args can be written under out_dir '{}'", out_dir.display()));
 
     // Create a file and record the args passed to the command.
-    let f = File::create(&candidate).unwrap_or_else(|e| {
+    let mut f = File::create(&candidate).unwrap_or_else(|e| {
         panic!(
             "{}: can't create candidate: {}, error: {}",
             program,
@@ -35,6 +36,17 @@ fn main() {
             e
         )
     });
+
+    // Try to acquire an exclusive lock on the file.
+    f.lock_exclusive().unwrap_or_else(|e| {
+        panic!(
+            "{}: can't lock candidate: {}, error: {}",
+            program,
+            candidate.display(),
+            e
+        )
+    });
+
     let mut f = io::BufWriter::new(f);
 
     (|| {
