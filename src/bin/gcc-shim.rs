@@ -3,7 +3,7 @@
 use std::env;
 use std::fs::File;
 use std::io::{self, prelude::*};
-use std::os::unix::prelude::FileExt;
+use std::os::unix::fs::FileExt;
 use std::path::PathBuf;
 
 fn main() {
